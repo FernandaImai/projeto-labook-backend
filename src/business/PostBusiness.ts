@@ -42,7 +42,7 @@ export class PostBusiness {
     const payload = this.tokenManager.getPayload(token);
 
     if (!payload) {
-      throw new BadRequestError("Token inválido");
+      throw new UnauthorizedError("Token não autorizado");
     }
 
     const postDBWithCreatorName =
@@ -74,7 +74,7 @@ export class PostBusiness {
     const payload = this.tokenManager.getPayload(token);
 
     if (!payload) {
-      throw new BadRequestError("Token inválido");
+      throw new UnauthorizedError("Token não autorizado");
     }
 
     const id = this.IdGenerator.generate();
@@ -102,7 +102,7 @@ export class PostBusiness {
   };
 
   public updatePost = async (input: UpdatePostInputDTO): Promise<UpdatePostOutputDTO> => {
-    const { content, token, id} = input;
+    const { content, token, idToEdit} = input;
 
     const payload = this.tokenManager.getPayload(token);
 
@@ -110,7 +110,7 @@ export class PostBusiness {
       throw new UnauthorizedError("Token inválido");
     }
 
-    const postBR = await this.postDataBase.findPostById(id);
+    const postBR = await this.postDataBase.findPostById(idToEdit);
 
     if (!postBR) {
       throw new NotFoundError("post com esse id não existe");
@@ -136,9 +136,8 @@ export class PostBusiness {
     const updatePostDB = post.toDBModel();
     await this.postDataBase.updatePost(updatePostDB);
 
-    const response: UpdatePostOutputDTO = {
-        message: "Post atualizado com sucesso!",
-      };
+
+    const response: UpdatePostOutputDTO = undefined;
 
     return response;
   };
@@ -151,26 +150,25 @@ export class PostBusiness {
     const payload = this.tokenManager.getPayload(token);
 
     if (!payload) {
-      throw new BadRequestError("post com esse id não existe");
+      throw new UnauthorizedError("post com esse id não existe");
     }
 
-    const playlistDB = await this.postDataBase.findPostById(idToDelete);
+    const postDB = await this.postDataBase.findPostById(idToDelete);
 
-    if (!playlistDB) {
-      throw new NotFoundError("playlist com essa id não existe");
+    if (!postDB) {
+      throw new NotFoundError("post com essa id não existe");
     }
 
     if (payload.role !== USER_ROLES.ADMIN) {
-      if (payload.id !== playlistDB.creator_id) {
+      if (payload.id !== postDB.creator_id) {
         throw new BadRequestError("somente quem criou a post pode apagar");
       }
     }
 
     await this.postDataBase.deletePost(idToDelete);
 
-    const output: DeletePostOutputDTO = {
-        message: "Post excluído com sucesso!",
-      };
+    const output : DeletePostOutputDTO = undefined;
+
     return output;
   };
 
